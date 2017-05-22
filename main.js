@@ -46,6 +46,34 @@ var mediaType   = document.getElementById('media-type');
 var mediaMedium   = document.getElementById('media-medium');
 var mediaImage   = document.getElementById('media-image');
 
+function createTypeSelects() {
+  return `
+  ${mediaTypes.map(mediaType =>
+      `<option>${mediaType.type}</option>`
+  ).join('')}
+  `;
+}
+
+function createMediumSelects(mediaToSelect = mediaTypes[0].media) {
+  return `
+        ${mediaToSelect.map(availableMedium   => `<option>${availableMedium}</option>`)}
+    `;
+}
+
+mediaType.innerHTML = createTypeSelects();
+
+mediaType.addEventListener('change', createMediumSelectsByType);
+
+function createMediumSelectsByType() {
+  let targetMediaType = this.value;
+  /**
+   * return Index of Media Object in mediaTypes Model
+   * @type {number}
+   */
+  let mediaTypeIndex = mediaTypes.findIndex(function(obj) { return obj.type === targetMediaType; });
+  mediaMedium.innerHTML = createMediumSelects(mediaTypes[mediaTypeIndex].media);
+}
+
 addMediaForm.addEventListener('submit', (e) => {
   e.preventDefault();
 
