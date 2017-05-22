@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Media Library</title>
+      <link rel="stylesheet" href="main.css">
+    </head>
+    <body>
+      <div class="container">
+        <h1>Media Library</h1>
+        <form id="addMediaForm">
+          <h2>create / update</h2>
+          <input type="hidden" id="media-hiddenId" />
+          <input type="text" id="media-title" />
+          <br>
+          <select id="media-type">
+            <!--<option>music</option>
+            <option>movie</option>-->
+          </select>
+          <br>
+          <select id="media-medium">
+            <option>vinyl</option>
+            <option>cd</option>
+          </select>
+          <br/>
+          <textarea id="media-description"></textarea>
+          <br/>
+          <input type="text" id="media-image" />
+          <br>
+          <button type="submit">Add/Update Media</button>
+        </form>
+        <br/>
+        <h2>Given</h2>
+        <ul class="media-list" id="medialist"></ul>
+      </div>
+      <script src="https://www.gstatic.com/firebasejs/4.0.0/firebase.js"></script>
+      <script src="main.js"></script>
+      <link href="//fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
+    </body>
+</html>
