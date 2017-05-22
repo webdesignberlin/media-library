@@ -1,4 +1,8 @@
-var config = {
+/**
+ * Firebase Config
+ * @type {{apiKey: string, authDomain: string, databaseURL: string, projectId: string, storageBucket: string, messagingSenderId: string}}
+ */
+const config = {
   apiKey: "AIzaSyCyFFlbISbTyrZI9XlIcNQBWs-eWDgpK20",
   authDomain: "media-615d8.firebaseapp.com",
   databaseURL: "https://media-615d8.firebaseio.com",
@@ -7,6 +11,10 @@ var config = {
   messagingSenderId: "1032551991393"
 };
 
+/**
+ * Media Type Model
+ * @type {*[]}
+ */
 const mediaTypes = [
   {
     type: 'music',
@@ -34,10 +42,9 @@ const mediaTypes = [
 ];
 
 firebase.initializeApp(config);
-var db = firebase.database();
+let db = firebase.database();
 
-// CREATE REWIEW
-
+// create media
 var addMediaForm = document.getElementById('addMediaForm');
 var mediaTitle   = document.getElementById('media-title');
 var mediaDescription    = document.getElementById('media-description');
@@ -46,24 +53,40 @@ var mediaType   = document.getElementById('media-type');
 var mediaMedium   = document.getElementById('media-medium');
 var mediaImage   = document.getElementById('media-image');
 
+/**
+ * Create Type Selects Template
+ * @returns {string}
+ */
 function createTypeSelects() {
   return `
   ${mediaTypes.map(mediaType =>
-      `<option>${mediaType.type}</option>`
+    `<option>${mediaType.type}</option>`
   ).join('')}
   `;
 }
 
+/**
+ * Create Medium Select Template
+ * @param mediaToSelect
+ * @returns {string}
+ */
 function createMediumSelects(mediaToSelect = mediaTypes[0].media) {
   return `
-        ${mediaToSelect.map(availableMedium   => `<option>${availableMedium}</option>`)}
-    `;
+  ${mediaToSelect.map(availableMedium =>
+    `<option>${availableMedium}</option>`)}
+  `;
 }
 
-mediaType.innerHTML = createTypeSelects();
+function appInit(){
+  mediaType.innerHTML = createTypeSelects();
+  mediaType.addEventListener('change', createMediumSelectsByType);
+}
 
-mediaType.addEventListener('change', createMediumSelectsByType);
+appInit();
 
+/**
+ * Create Mediums by Type
+ */
 function createMediumSelectsByType() {
   let targetMediaType = this.value;
   /**
@@ -74,12 +97,17 @@ function createMediumSelectsByType() {
   mediaMedium.innerHTML = createMediumSelects(mediaTypes[mediaTypeIndex].media);
 }
 
+/**
+ * Handle Form submit to create Media Item
+ */
 addMediaForm.addEventListener('submit', (e) => {
   e.preventDefault();
 
-  if (!mediaTitle.value || !mediaDescription.value) return null
+  if (!mediaTitle.value || !mediaDescription.value) {
+    return null;
+  }
 
-  var id = mediaHiddenId.value || Date.now()
+  let id = mediaHiddenId.value || Date.now();
 
   db.ref('medialist/' + id).set({
     title: mediaTitle.value,
@@ -94,11 +122,13 @@ addMediaForm.addEventListener('submit', (e) => {
   mediaHiddenId.value = '';
 });
 
-// READ REVEIWS
-
+// read media
 var mediaList = document.getElementById('medialist');
 var mediaListRef = db.ref('/medialist');
 
+/**
+ * Listen on API adds, render mediaList
+ */
 mediaListRef.on('child_added', (data) => {
   let listItem = document.createElement('li');
   listItem.classList.add('card', 'media-list__item');
@@ -107,20 +137,29 @@ mediaListRef.on('child_added', (data) => {
   mediaList.appendChild(listItem);
 });
 
+/**
+ * Listen on API changes, re-render mediaList Item
+ */
 mediaListRef.on('child_changed', (data) => {
   var mediaNode = document.getElementById(data.key);
   mediaNode.innerHTML = mediaListTemplate(data.key, data.val());
 });
 
+/**
+ * Listen on API deletes, remove mediaList Item
+ */
 mediaListRef.on('child_removed', (data) => {
   var mediaNode = document.getElementById(data.key);
   mediaNode.parentNode.removeChild(mediaNode);
 });
 
+/**
+ * Listener and Handler for edit/delete
+ */
 mediaList.addEventListener('click', (e) => {
   var mediaNode = document.getElementById(e.target.dataset.mediaTarget);
 
-  // UPDATE REVEIW
+  // update media
   if (e.target.classList.contains('edit')) {
     var list = mediaNode.querySelectorAll('[data-media-content-ref]');
     Array.prototype.forEach.call(list, function (item) {
@@ -131,13 +170,23 @@ mediaList.addEventListener('click', (e) => {
     mediaHiddenId.value = mediaNode.id;
   }
 
-  // DELETE REVEIW
+  // delete media
   if (e.target.classList.contains('delete')) {
     var id = mediaNode.id;
     db.ref('medialist/' + id).remove();
   }
 });
 
+/**
+ * Create Media List Template
+ * @param id
+ * @param title
+ * @param description
+ * @param type
+ * @param medium
+ * @param imagePath
+ * @returns {string}
+ */
 function mediaListTemplate(id,{title, description, type, medium, imagePath}) {
   return `
     <div class="card__image">
