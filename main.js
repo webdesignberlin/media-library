@@ -163,7 +163,7 @@ mediaList.addEventListener('click', (e) => {
   if (e.target.classList.contains('edit')) {
     let list = mediaNode.querySelectorAll('[data-media-content-ref]');
     Array.prototype.forEach.call(list, function (item) {
-      let mediaIdRef = eval(item.dataset.mediaContentRef);
+      let mediaIdRef = document.getElementById(item.dataset.mediaContentRef);
       mediaIdRef.value = item.dataset.mediaContent;
     });
 
@@ -190,18 +190,18 @@ mediaList.addEventListener('click', (e) => {
 function mediaListTemplate(id,{title, description, type, medium, imagePath}) {
   return `
     <div class="card__image">
-        <img src="${imagePath}" alt="" data-media-content-ref="mediaImage" data-media-content="${imagePath}" class='image-path'>
+        <img src="${imagePath}" alt="" data-media-content-ref="media-image" data-media-content="${imagePath}" class='image-path'>
     </div>
     <div class="card__content">
-      <h3 class="card__title" data-media-content-ref="mediaTitle" data-media-content="${title}">${title}</h3>
-      <div data-media-content-ref="mediaDescription" data-media-content="${description}" class="card__description">
+      <h3 class="card__title" data-media-content-ref="media-title" data-media-content="${title}">${title}</h3>
+      <div data-media-content-ref="media-description" data-media-content="${description}" class="card__description">
         <p>${description}</p>
       </div>
-      <span class="chip chip--with-label" data-media-content-ref="mediaType" data-media-content="${type}">
+      <span class="chip chip--with-label" data-media-content-ref="media-type" data-media-content="${type}">
         <span class="chip__label">T</span>
         <span class="chip__text">${type}</span>
       </span>
-      <span class="chip chip--with-label" data-media-content-ref="mediaMedium" data-media-content="${medium}">
+      <span class="chip chip--with-label" data-media-content-ref="media-medium" data-media-content="${medium}">
         <span class="chip__label">M</span>
         <span class="chip__text">${medium}</span>
       </span>
