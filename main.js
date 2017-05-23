@@ -45,13 +45,13 @@ firebase.initializeApp(config);
 let db = firebase.database();
 
 // create media
-var addMediaForm = document.getElementById('addMediaForm');
-var mediaTitle   = document.getElementById('media-title');
-var mediaDescription    = document.getElementById('media-description');
-var mediaHiddenId   = document.getElementById('media-hiddenId');
-var mediaType   = document.getElementById('media-type');
-var mediaMedium   = document.getElementById('media-medium');
-var mediaImage   = document.getElementById('media-image');
+let addMediaForm = document.getElementById('addMediaForm');
+let mediaTitle = document.getElementById('media-title');
+let mediaDescription = document.getElementById('media-description');
+let mediaHiddenId = document.getElementById('media-hiddenId');
+let mediaType = document.getElementById('media-type');
+let mediaMedium = document.getElementById('media-medium');
+let mediaImage = document.getElementById('media-image');
 
 /**
  * Create Type Selects Template
@@ -123,8 +123,8 @@ addMediaForm.addEventListener('submit', (e) => {
 });
 
 // read media
-var mediaList = document.getElementById('medialist');
-var mediaListRef = db.ref('/medialist');
+let mediaList = document.getElementById('medialist');
+let mediaListRef = db.ref('/medialist');
 
 /**
  * Listen on API adds, render mediaList
@@ -141,7 +141,7 @@ mediaListRef.on('child_added', (data) => {
  * Listen on API changes, re-render mediaList Item
  */
 mediaListRef.on('child_changed', (data) => {
-  var mediaNode = document.getElementById(data.key);
+  let mediaNode = document.getElementById(data.key);
   mediaNode.innerHTML = mediaListTemplate(data.key, data.val());
 });
 
@@ -149,7 +149,7 @@ mediaListRef.on('child_changed', (data) => {
  * Listen on API deletes, remove mediaList Item
  */
 mediaListRef.on('child_removed', (data) => {
-  var mediaNode = document.getElementById(data.key);
+  let mediaNode = document.getElementById(data.key);
   mediaNode.parentNode.removeChild(mediaNode);
 });
 
@@ -157,11 +157,11 @@ mediaListRef.on('child_removed', (data) => {
  * Listener and Handler for edit/delete
  */
 mediaList.addEventListener('click', (e) => {
-  var mediaNode = document.getElementById(e.target.dataset.mediaTarget);
+  let mediaNode = document.getElementById(e.target.dataset.mediaTarget);
 
   // update media
   if (e.target.classList.contains('edit')) {
-    var list = mediaNode.querySelectorAll('[data-media-content-ref]');
+    let list = mediaNode.querySelectorAll('[data-media-content-ref]');
     Array.prototype.forEach.call(list, function (item) {
       let mediaIdRef = eval(item.dataset.mediaContentRef);
       mediaIdRef.value = item.dataset.mediaContent;
@@ -172,7 +172,7 @@ mediaList.addEventListener('click', (e) => {
 
   // delete media
   if (e.target.classList.contains('delete')) {
-    var id = mediaNode.id;
+    let id = mediaNode.id;
     db.ref('medialist/' + id).remove();
   }
 });
@@ -211,4 +211,4 @@ function mediaListTemplate(id,{title, description, type, medium, imagePath}) {
       <button data-media-target="${id}" class="button edit">Edit</button>
     </div>
   `
-};
+}
