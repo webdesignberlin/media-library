@@ -9,6 +9,23 @@
     <body>
       <div class="container">
         <h1>Media Library</h1>
+
+        <header>
+          <div class="is-logged-out">
+            <input type="email" id="email" placeholder="email"><br>
+            <input type="password" id="password" placeholder="password"><br>
+            <button class="button" id="sign-in-button">sign in</button> <button class="button button--danger" id="sign-in-google-button">with google</button>
+          </div>
+
+          <div class="is-logged-in">
+            <button class="button" id="sign-out-button">sign out</button>
+          </div>
+        </header>
+
+        <section id="page-splash">
+
+        </section>
+
         <form id="addMediaForm">
           <h2>create / update</h2>
           <input type="hidden" id="media-hiddenId" />
@@ -28,7 +45,7 @@
           <br/>
           <input type="text" id="media-image" />
           <br>
-          <button type="submit">Add/Update Media</button>
+          <button class="button" type="submit">Add/Update Media</button>
         </form>
         <br/>
         <h2>Given</h2>

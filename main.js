@@ -44,151 +44,170 @@ const mediaTypes = [
 firebase.initializeApp(config);
 let db = firebase.database();
 
-// create media
-let addMediaForm = document.getElementById('addMediaForm');
-let mediaTitle = document.getElementById('media-title');
-let mediaDescription = document.getElementById('media-description');
-let mediaHiddenId = document.getElementById('media-hiddenId');
-let mediaType = document.getElementById('media-type');
-let mediaMedium = document.getElementById('media-medium');
-let mediaImage = document.getElementById('media-image');
-
 /**
- * Create Type Selects Template
- * @returns {string}
+ * initApp handles setting up UI event listeners and registering Firebase auth listeners:
+ *  - firebase.auth().onAuthStateChanged: This listener is called when the user is signed in or
+ *    out, and that is where we update the UI.
  */
-function createTypeSelects() {
-  return `
+function initApp() {
+
+  let elementsVisibleOnLoggedIn = document.querySelectorAll('.is-logged-in');
+  let elementsHiddenOnLoggedOut = document.querySelectorAll('.is-logged-out');
+
+  // Listening for auth state changes.
+  // [START authstatelistener]
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+
+      for (let element of elementsHiddenOnLoggedOut) {
+        element.style.display = 'none';
+      }
+
+      // create media
+      let addMediaForm = document.getElementById('addMediaForm');
+      let mediaTitle = document.getElementById('media-title');
+      let mediaDescription = document.getElementById('media-description');
+      let mediaHiddenId = document.getElementById('media-hiddenId');
+      let mediaType = document.getElementById('media-type');
+      let mediaMedium = document.getElementById('media-medium');
+      let mediaImage = document.getElementById('media-image');
+
+      /**
+       * Create Type Selects Template
+       * @returns {string}
+       */
+      function createTypeSelects() {
+        return `
   ${mediaTypes.map(mediaType =>
-    `<option>${mediaType.type}</option>`
-  ).join('')}
+          `<option>${mediaType.type}</option>`
+        ).join('')}
   `;
-}
+      }
 
-/**
- * Create Medium Select Template
- * @param mediaToSelect
- * @returns {string}
- */
-function createMediumSelects(mediaToSelect = mediaTypes[0].media) {
-  return `
+      /**
+       * Create Medium Select Template
+       * @param mediaToSelect
+       * @returns {string}
+       */
+      function createMediumSelects(mediaToSelect = mediaTypes[0].media) {
+        return `
   ${mediaToSelect.map(availableMedium =>
-    `<option>${availableMedium}</option>`)}
+          `<option>${availableMedium}</option>`)}
   `;
-}
+      }
 
-function appInit(){
-  mediaType.innerHTML = createTypeSelects();
-  mediaType.addEventListener('change', createMediumSelectsByType);
-}
+      function appInit(){
+        mediaType.innerHTML = createTypeSelects();
+        mediaType.addEventListener('change', createMediumSelectsByType);
+      }
 
-appInit();
+      appInit();
 
-/**
- * Create Mediums by Type
- */
-function createMediumSelectsByType() {
-  let targetMediaType = this.value;
-  /**
-   * return Index of Media Object in mediaTypes Model
-   * @type {number}
-   */
-  let mediaTypeIndex = mediaTypes.findIndex(function(obj) { return obj.type === targetMediaType; });
-  mediaMedium.innerHTML = createMediumSelects(mediaTypes[mediaTypeIndex].media);
-}
+      /**
+       * Create Mediums by Type
+       */
+      function createMediumSelectsByType() {
+        let targetMediaType = this.value;
+        /**
+         * return Index of Media Object in mediaTypes Model
+         * @type {number}
+         */
+        let mediaTypeIndex = mediaTypes.findIndex(function(obj) { return obj.type === targetMediaType; });
+        mediaMedium.innerHTML = createMediumSelects(mediaTypes[mediaTypeIndex].media);
+      }
 
-/**
- * Handle Form submit to create Media Item
- */
-addMediaForm.addEventListener('submit', (e) => {
-  e.preventDefault();
+      /**
+       * Handle Form submit to create Media Item
+       */
+      addMediaForm.addEventListener('submit', (e) => {
+        e.preventDefault();
 
-  if (!mediaTitle.value || !mediaDescription.value) {
-    return null;
-  }
+        if (!mediaTitle.value || !mediaDescription.value) {
+          return null;
+        }
 
-  let id = mediaHiddenId.value || Date.now();
+        let id = mediaHiddenId.value || Date.now();
 
-  db.ref('medialist/' + id).set({
-    title: mediaTitle.value,
-    description: mediaDescription.value,
-    type: mediaType.value || null,
-    imagePath: mediaImage.value || null,
-    medium: mediaMedium.value || null
-  });
+        db.ref('medialist/' + id).set({
+          title: mediaTitle.value,
+          description: mediaDescription.value,
+          type: mediaType.value || null,
+          imagePath: mediaImage.value || null,
+          medium: mediaMedium.value || null
+        });
 
-  mediaTitle.value = '';
-  mediaDescription.value  = '';
-  mediaHiddenId.value = '';
-});
+        mediaTitle.value = '';
+        mediaDescription.value  = '';
+        mediaHiddenId.value = '';
+      });
 
 // read media
-let mediaList = document.getElementById('medialist');
-let mediaListRef = db.ref('/medialist');
+      let mediaList = document.getElementById('medialist');
+      let mediaListRef = db.ref('/medialist');
 
-/**
- * Listen on API adds, render mediaList
- */
-mediaListRef.on('child_added', (data) => {
-  let listItem = document.createElement('li');
-  listItem.classList.add('card', 'media-list__item');
-  listItem.id = data.key;
-  listItem.innerHTML = mediaListTemplate(data.key, data.val());
-  mediaList.appendChild(listItem);
-});
+      /**
+       * Listen on API adds, render mediaList
+       */
+      mediaListRef.on('child_added', (data) => {
+        let listItem = document.createElement('li');
+        listItem.classList.add('card', 'media-list__item');
+        listItem.id = data.key;
+        listItem.innerHTML = mediaListTemplate(data.key, data.val());
+        mediaList.appendChild(listItem);
+      });
 
-/**
- * Listen on API changes, re-render mediaList Item
- */
-mediaListRef.on('child_changed', (data) => {
-  let mediaNode = document.getElementById(data.key);
-  mediaNode.innerHTML = mediaListTemplate(data.key, data.val());
-});
+      /**
+       * Listen on API changes, re-render mediaList Item
+       */
+      mediaListRef.on('child_changed', (data) => {
+        let mediaNode = document.getElementById(data.key);
+        mediaNode.innerHTML = mediaListTemplate(data.key, data.val());
+      });
 
-/**
- * Listen on API deletes, remove mediaList Item
- */
-mediaListRef.on('child_removed', (data) => {
-  let mediaNode = document.getElementById(data.key);
-  mediaNode.parentNode.removeChild(mediaNode);
-});
+      /**
+       * Listen on API deletes, remove mediaList Item
+       */
+      mediaListRef.on('child_removed', (data) => {
+        let mediaNode = document.getElementById(data.key);
+        mediaNode.parentNode.removeChild(mediaNode);
+      });
 
-/**
- * Listener and Handler for edit/delete
- */
-mediaList.addEventListener('click', (e) => {
-  let mediaNode = document.getElementById(e.target.dataset.mediaTarget);
+      /**
+       * Listener and Handler for edit/delete
+       */
+      mediaList.addEventListener('click', (e) => {
+        let mediaNode = document.getElementById(e.target.dataset.mediaTarget);
 
-  // update media
-  if (e.target.classList.contains('edit')) {
-    let list = mediaNode.querySelectorAll('[data-media-content-ref]');
-    Array.prototype.forEach.call(list, function (item) {
-      let mediaIdRef = document.getElementById(item.dataset.mediaContentRef);
-      mediaIdRef.value = item.dataset.mediaContent;
-    });
+        // update media
+        if (e.target.classList.contains('edit')) {
+          let list = mediaNode.querySelectorAll('[data-media-content-ref]');
+          Array.prototype.forEach.call(list, function (item) {
+            let mediaIdRef = document.getElementById(item.dataset.mediaContentRef);
+            mediaIdRef.value = item.dataset.mediaContent;
+          });
 
-    mediaHiddenId.value = mediaNode.id;
-  }
+          mediaHiddenId.value = mediaNode.id;
+        }
 
-  // delete media
-  if (e.target.classList.contains('delete')) {
-    let id = mediaNode.id;
-    db.ref('medialist/' + id).remove();
-  }
-});
+        // delete media
+        if (e.target.classList.contains('delete')) {
+          let id = mediaNode.id;
+          db.ref('medialist/' + id).remove();
+        }
+      });
 
-/**
- * Create Media List Template
- * @param id
- * @param title
- * @param description
- * @param type
- * @param medium
- * @param imagePath
- * @returns {string}
- */
-function mediaListTemplate(id,{title, description, type, medium, imagePath}) {
-  return `
+      /**
+       * Create Media List Template
+       * @param id
+       * @param title
+       * @param description
+       * @param type
+       * @param medium
+       * @param imagePath
+       * @returns {string}
+       */
+      function mediaListTemplate(id,{title, description, type, medium, imagePath}) {
+        return `
     <div class="card__image">
         <img src="${imagePath}" alt="" data-media-content-ref="media-image" data-media-content="${imagePath}" class='image-path'>
     </div>
@@ -211,4 +230,69 @@ function mediaListTemplate(id,{title, description, type, medium, imagePath}) {
       <button data-media-target="${id}" class="button edit">Edit</button>
     </div>
   `
+      }
+
+
+    } else {
+      console.log('signed out');
+      for (let element of elementsVisibleOnLoggedIn) {
+        element.style.display = 'none';
+      }
+    }
+  });
 }
+window.onload = function() {
+  initApp();
+};
+
+/**
+ * Login
+ */
+let signInButton = document.getElementById('sign-in-button');
+let signOutButton = document.getElementById('sign-out-button');
+signOutButton.addEventListener('click', firebase.auth().signOut());
+
+/**
+ * Handles the sign in button press.
+ */
+function toggleSignIn() {
+
+  console.log(firebase.auth().currentUser);
+
+  if (firebase.auth().currentUser) {
+    firebase.auth().signOut();
+  } else {
+
+    let email = document.getElementById('email').value;
+    let password = document.getElementById('password').value;
+
+    if (email.length < 4) {
+      alert('Please enter an email address.');
+      return;
+    }
+    if (password.length < 4) {
+      alert('Please enter a password.');
+      return;
+    }
+    // Sign in with email and pass.
+    // [START authwithemail]
+    firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+      // Handle Errors here.
+      let errorCode = error.code;
+      let errorMessage = error.message;
+      // [START_EXCLUDE]
+      if (errorCode === 'auth/wrong-password') {
+        alert('Wrong password.');
+      } else {
+        alert(errorMessage);
+      }
+      console.log(error);
+      signInButton.disabled = false;
+      // [END_EXCLUDE]
+    });
+    // [END authwithemail]
+  }
+  signInButton.disabled = true;
+}
+
+signInButton.addEventListener('click', toggleSignIn, false);

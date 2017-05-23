@@ -67,7 +67,7 @@ div, input, a, button, textarea, ul, li {
   background-color: var(--color-highlight);
   border: none;
   border-radius: 2px;
-  color: #000;
+  color: #fff;
   position: relative;
   height: var(--button-size);
   margin: 0;
@@ -139,8 +139,10 @@ div, input, a, button, textarea, ul, li {
 }
 
 input[type="text"],
+input[type="email"],
+input[type="password"],
 textarea {
-  border: 1px solid #EEE;
+  border: 1px solid #eee;
   display: block;
   width: 100%;
   padding: 8px;
