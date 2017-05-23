@@ -51,15 +51,18 @@ let db = firebase.database();
  */
 function initApp() {
 
-  let elementsVisibleOnLoggedIn = document.querySelectorAll('.is-logged-in');
-  let elementsHiddenOnLoggedOut = document.querySelectorAll('.is-logged-out');
+  let elsIsLoggedIn = document.querySelectorAll('.is-logged-in');
+  let elsIsLoggedOut = document.querySelectorAll('.is-logged-out');
 
   // Listening for auth state changes.
   // [START authstatelistener]
   firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
 
-      for (let element of elementsHiddenOnLoggedOut) {
+      for (let element of elsIsLoggedIn) {
+        element.style.display = '';
+      }
+      for (let element of elsIsLoggedOut) {
         element.style.display = 'none';
       }
 
@@ -235,8 +238,11 @@ function initApp() {
 
     } else {
       console.log('signed out');
-      for (let element of elementsVisibleOnLoggedIn) {
+      for (let element of elsIsLoggedIn) {
         element.style.display = 'none';
+      }
+      for (let element of elsIsLoggedOut) {
+        element.style.display = '';
       }
     }
   });
@@ -249,50 +255,92 @@ window.onload = function() {
  * Login
  */
 let signInButton = document.getElementById('sign-in-button');
+let signInGoogleButton = document.getElementById('sign-in-google-button');
 let signOutButton = document.getElementById('sign-out-button');
-signOutButton.addEventListener('click', firebase.auth().signOut());
 
 /**
  * Handles the sign in button press.
  */
-function toggleSignIn() {
+function toggleSignIn(e) {
 
-  console.log(firebase.auth().currentUser);
-
-  if (firebase.auth().currentUser) {
-    firebase.auth().signOut();
-  } else {
-
-    let email = document.getElementById('email').value;
-    let password = document.getElementById('password').value;
-
-    if (email.length < 4) {
-      alert('Please enter an email address.');
-      return;
-    }
-    if (password.length < 4) {
-      alert('Please enter a password.');
-      return;
-    }
-    // Sign in with email and pass.
-    // [START authwithemail]
-    firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+  /**
+   * Handle Google LogIn
+   */
+  if (e.target === signInGoogleButton) {
+// [START createprovider]
+    let provider = new firebase.auth.GoogleAuthProvider();
+    // [END createprovider]
+    // [START addscopes]
+    provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
+    // [END addscopes]
+    // [START signin]
+    firebase.auth().signInWithPopup(provider).then(function(result) {
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      let token = result.credential.accessToken;
+      // The signed-in user info.
+      let user = result.user;
+      // [START_EXCLUDE]
+      // [END_EXCLUDE]
+    }).catch(function(error) {
       // Handle Errors here.
       let errorCode = error.code;
       let errorMessage = error.message;
+      // The email of the user's account used.
+      let email = error.email;
+      // The firebase.auth.AuthCredential type that was used.
+      let credential = error.credential;
       // [START_EXCLUDE]
-      if (errorCode === 'auth/wrong-password') {
-        alert('Wrong password.');
+      if (errorCode === 'auth/account-exists-with-different-credential') {
+        alert('You have already signed up with a different auth provider for that email.');
+        // If you are using multiple auth providers on your app you should handle linking
+        // the user's accounts here.
       } else {
-        alert(errorMessage);
+        console.error(error);
       }
-      console.log(error);
-      signInButton.disabled = false;
       // [END_EXCLUDE]
     });
-    // [END authwithemail]
+    // [END signin]
+  } else {
+
+    console.log(firebase.auth().currentUser);
+
+    if (firebase.auth().currentUser) {
+      firebase.auth().signOut();
+    } else {
+
+      let email = document.getElementById('email').value;
+      let password = document.getElementById('password').value;
+
+      if (email.length < 4) {
+        alert('Please enter an email address.');
+        return;
+      }
+      if (password.length < 4) {
+        alert('Please enter a password.');
+        return;
+      }
+      // Sign in with email and pass.
+      // [START authwithemail]
+      firebase.auth().signInWithEmailAndPassword(email, password).catch(function (error) {
+        // Handle Errors here.
+        let errorCode = error.code;
+        let errorMessage = error.message;
+        // [START_EXCLUDE]
+        if (errorCode === 'auth/wrong-password') {
+          alert('Wrong password.');
+        } else {
+          alert(errorMessage);
+        }
+        console.log(error);
+        signInButton.disabled = false;
+        // [END_EXCLUDE]
+      });
+      // [END authwithemail]
+    }
+    signInButton.disabled = true;
   }
-  signInButton.disabled = true;
 }
 
 signInButton.addEventListener('click', toggleSignIn, false);
+signInGoogleButton.addEventListener('click', toggleSignIn, false);
+signOutButton.addEventListener('click', toggleSignIn, false);
